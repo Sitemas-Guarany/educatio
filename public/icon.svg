@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#006847"/>
+  <rect x="40" y="0" width="432" height="8" fill="#F5C800"/>
+  <rect x="40" y="504" width="432" height="8" fill="#003082"/>
+  <text x="256" y="300" text-anchor="middle" font-family="Georgia,serif" font-weight="bold" font-size="280" fill="#F5C800">E</text>
+  <text x="256" y="420" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="600" font-size="72" fill="white" opacity="0.9">ducatio</text>
+</svg>
