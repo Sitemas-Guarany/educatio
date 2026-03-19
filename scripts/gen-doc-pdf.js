@@ -1,0 +1,209 @@
+/**
+ * Gera PDF de documentação técnica do Educatio para o desenvolvedor.
+ * Uso: node scripts/gen-doc-pdf.js
+ * Requer: npm install jspdf (já instalado ou instale antes)
+ */
+
+// Fallback: gera um arquivo .txt formatado se jsPDF não estiver disponível
+const fs = require("fs");
+
+const DOC = `
+================================================================================
+  EDUCATIO — DOCUMENTAÇÃO TÉCNICA DO SISTEMA
+  Versão 2.0.0 · Março 2026
+  Desenvolvido por Sistemas Guarany · (85) 99649-6064
+================================================================================
+
+1. VISÃO GERAL
+--------------------------------------------------------------------------------
+Plataforma de recomposição da aprendizagem para alunos do 6º ao 9º ano,
+alinhada à BNCC (Base Nacional Curricular Comum) e DCRC do Ceará.
+
+Produção: https://educatio.digital
+GitHub:   https://github.com/Sitemas-Guarany/educatio
+Hosting:  Vercel (deploy via npx vercel --prod --yes --name educatio)
+Domínio:  educatio.digital (DNS na IONOS)
+
+2. STACK TECNOLÓGICA
+--------------------------------------------------------------------------------
+| Camada          | Tecnologia                      | Versão   |
+|-----------------|----------------------------------|----------|
+| Framework       | Next.js (App Router)             | 14.2.5   |
+| Linguagem       | TypeScript                       | 5        |
+| Estilização     | Tailwind CSS                     | 3.4.6    |
+| Editor          | Tiptap (13 extensões)            | 2.x      |
+| Animações       | Framer Motion                    | 11.3.8   |
+| Ícones          | Lucide React                     | 0.414.0  |
+| PWA             | next-pwa                         | 5.6.0    |
+| IA              | Claude Haiku (Anthropic API)     | 2023-06  |
+| Dados externos  | IBGE API + INEP Censo Escolar    | —        |
+| Persistência    | localStorage (sem backend)       | —        |
+
+3. ESTRUTURA DE ARQUIVOS
+--------------------------------------------------------------------------------
+src/
+  app/
+    layout.tsx              Root layout + AuthProvider + metadata PWA
+    page.tsx                Página principal (dashboard protegido)
+    api/
+      chat/route.ts         API IA Claude (tutor educacional)
+      ibge/municipios/route.ts  Proxy IBGE municípios do Ceará
+      escolas/route.ts      Busca escolas INEP por município
+
+  components/
+    layout/
+      Header.tsx            Header verde Ceará + nome usuário + ajuda + logout
+      Footer.tsx            Rodapé copyright Sistemas Guarany
+      AjudaPanel.tsx        Central de ajuda com FAQs por perfil
+    dashboard/
+      StatsBar.tsx          Pontos, atividades, sequência
+      SerieSelector.tsx     Seletor 6º-9º ano
+      SubjectGrid.tsx       Grid de matérias
+      TopicsPanel.tsx       Tópicos por nível (básico/intermediário/avançado)
+    quiz/
+      QuizPanel.tsx         Quiz gamificado com IA no erro
+    auth/
+      AuthPage.tsx          Login + cadastro hierárquico
+      EscolaCadastro.tsx    Busca escola INEP por município
+    planoaula/
+      PlanosAulaPanel.tsx   CRUD planos de aula
+      PlanoAulaEditor.tsx   Editor Tiptap + metadados
+      EditorToolbar.tsx     Toolbar completa (14 ferramentas)
+    prova/
+      ProvasPanel.tsx       Professor: lista + gerencia provas
+      ProvaEditor.tsx       Criar/editar prova com questões
+      QuestaoEditor.tsx     Editor de questão (3 tipos)
+      ProvasAlunoPanel.tsx  Aluno: lista + realizar + resultado
+      CorrecaoPanel.tsx     Professor: corrigir com notas
+    ai/
+      AiButton.tsx          Botão "Perguntar à IA" reutilizável
+      AiChatModal.tsx       Modal chat com Claude
+    admin/
+      ImportAlunos.tsx      Importação CSV/Excel de alunos
+
+  lib/
+    auth.tsx                AuthProvider + useAuth (localStorage, roles, escolas)
+    data.ts                 Conteúdos BNCC/DCRC (6º-9º, 6 matérias, 3 níveis)
+    provas.ts               CRUD provas + submissões + auto-correção
+    utils.ts                Helpers: cn, masks, validação CPF, idade, níveis
+
+  types/
+    index.ts                Tipos: User, Escola, Serie, Prova, Submissão, etc
+  styles/
+    globals.css             Tailwind + Tiptap + PWA safe areas
+
+4. HIERARQUIA E VÍNCULOS
+--------------------------------------------------------------------------------
+
+  Escola (INEP ou manual)
+    escolaId, nome, código INEP, cidade, salas[]
+      |
+      +-- Professor (vinculado a escolaId)
+      |     professorId, matéria, sala
+      |     |
+      |     +-- Aluno (vinculado a escolaId + professorId)
+      |           série, sala, matrícula (obrigatória)
+      |
+      +-- Prova (professor → escolaId + série + sala)
+      |     questões[]: múltipla_escolha | dissertativa | cálculo
+      |     |
+      |     +-- SubmissãoProva (aluno responde)
+      |           respostas[], notas[], comentários[]
+      |
+      +-- PlanoAula (professor)
+            data, matéria, série, conteúdo HTML
+
+5. TIPOS TYPESCRIPT PRINCIPAIS
+--------------------------------------------------------------------------------
+
+User {
+  id, nome, nomeCompleto, nomeMae?, dataNascimento?, sexo?,
+  email, cpf, matrícula, role (aluno|professor|administrador),
+  série?, sala?, matéria?, escolaId, professorId?, createdAt
+}
+
+Escola { id, nome, código?, cidade?, salas?[], createdAt }
+
+Prova {
+  id, professorId, escolaId, título, matéria, série, sala?,
+  descrição?, questões[], status (rascunho|publicada|encerrada),
+  dataAplicação?, createdAt, updatedAt
+}
+
+QuestãoProva {
+  id, tipo (múltipla_escolha|dissertativa|cálculo),
+  enunciado, pontos, alternativas?[], respostaCorretaIndex?,
+  descriçãoCálculo?
+}
+
+SubmissãoProva {
+  id, provaId, alunoId, respostas[], status,
+  notaTotal?, notaMáxima?, enviadoEm?, corrigidoEm?
+}
+
+RespostaQuestão {
+  questãoId, tipo, alternativaSelecionada?, textoResposta?,
+  respostaCálculo?, descriçãoPassos?, nota?, comentário?,
+  autoCorrigida?
+}
+
+PlanoAula {
+  id, professorId, escolaId, data, título, série, matéria,
+  objetivos?, conteúdo (HTML), notas?, createdAt, updatedAt
+}
+
+6. PERSISTÊNCIA (localStorage)
+--------------------------------------------------------------------------------
+| Chave               | Conteúdo                                  |
+|---------------------|-------------------------------------------|
+| educatio_users      | Array de usuários (com senha hash)        |
+| educatio_escolas    | Array de escolas                          |
+| educatio_session    | ID do usuário logado                      |
+| educatio_provas     | Array de provas                           |
+| educatio_submissoes | Array de submissões                       |
+| educatio_planos     | Array de planos de aula                   |
+
+7. APIs
+--------------------------------------------------------------------------------
+| Rota              | Método | Descrição                            |
+|-------------------|--------|--------------------------------------|
+| /api/chat         | POST   | Tutor IA (Claude Haiku)              |
+| /api/ibge/municipios | GET | Municípios do Ceará (cache 24h)      |
+| /api/escolas      | GET    | Escolas por município (cache 7 dias) |
+
+Variáveis de ambiente:
+  NEXT_PUBLIC_SITE_URL=https://educatio.digital
+  ANTHROPIC_API_KEY=sk-ant-...
+
+8. DEPLOY
+--------------------------------------------------------------------------------
+Vercel:  npx vercel --prod --yes --name educatio
+GitHub:  git push origin main (auto-deploy)
+DNS:     IONOS → A @ 76.76.21.21 / CNAME www cname.vercel-dns.com
+
+9. PALETA DE CORES (Bandeira do Ceará)
+--------------------------------------------------------------------------------
+| Token           | Hex       | Uso                     |
+|-----------------|-----------|-------------------------|
+| ceara-verde     | #006847   | Primária, header, botões|
+| ceara-amarelo   | #F5C800   | Destaques, progresso    |
+| ceara-azul      | #003082   | Institucional, BNCC     |
+| ceara-sol       | #F0A500   | Ciências, Inglês        |
+
+10. FERRAMENTAS DO EDITOR (Tiptap)
+--------------------------------------------------------------------------------
+Negrito, Itálico, Sublinhado, Tachado, Sobrescrito, Destaque,
+Lista com marcadores, Lista numerada, Lista de verificação,
+Alinhar (esquerda/centro/direita), Recuo/Recuo esquerda,
+Inserir/Remover link, Seletor de fontes (7 opções)
+
+================================================================================
+  © 2026 Educatio — Sistemas Guarany · (85) 99649-6064
+================================================================================
+`;
+
+// Write as formatted text file (PDF generation requires jsPDF in browser)
+fs.writeFileSync("docs/documentacao-tecnica-educatio.txt", DOC.trim(), "utf-8");
+console.log("Documentação técnica gerada: docs/documentacao-tecnica-educatio.txt");
+console.log("Para gerar PDF, abra o arquivo no Word/LibreOffice e salve como PDF.");
+console.log("Ou use: pandoc docs/documentacao-tecnica-educatio.txt -o docs/documentacao-tecnica-educatio.pdf");

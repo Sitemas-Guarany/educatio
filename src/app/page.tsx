@@ -17,11 +17,13 @@ import ImportAlunos from "@/components/admin/ImportAlunos";
 import PlanosAulaPanel from "@/components/planoaula/PlanosAulaPanel";
 import ProvasPanel from "@/components/prova/ProvasPanel";
 import ProvasAlunoPanel from "@/components/prova/ProvasAlunoPanel";
+import AjudaPanel from "@/components/layout/AjudaPanel";
 
 export default function HomePage() {
   const { user, loading, logout } = useAuth();
   const [serie, setSerie]         = useState<Serie>("6");
   const [subjectId, setSubjectId] = useState<string | null>(null);
+  const [showAjuda, setShowAjuda] = useState(false);
   const [points, setPoints]       = useState(240);
   const [done, setDone]           = useState(12);
   const [streak]                  = useState(3);
@@ -57,9 +59,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f7f6f2]">
-      <Header overallProgress={overallProgress} serie={serie} user={user} onLogout={logout} />
+      <Header overallProgress={overallProgress} serie={serie} user={user} onLogout={logout} onHelp={() => setShowAjuda(true)} />
 
       <main className="max-w-2xl mx-auto px-4 pb-16 pt-4 space-y-5">
+        {/* Ajuda */}
+        {showAjuda && (
+          <AjudaPanel onClose={() => setShowAjuda(false)} />
+        )}
+
         {/* Stats */}
         <StatsBar points={points} done={done} streak={streak} />
 

@@ -13,9 +13,10 @@ interface HeaderProps {
   serie: Serie;
   user?: User | null;
   onLogout?: () => void;
+  onHelp?: () => void;
 }
 
-export default function Header({ overallProgress, serie, user, onLogout }: HeaderProps) {
+export default function Header({ overallProgress, serie, user, onLogout, onHelp }: HeaderProps) {
   return (
     <header className="bg-ceara-verde text-white">
       {/* Faixa decorativa amarela fina */}
@@ -41,12 +42,23 @@ export default function Header({ overallProgress, serie, user, onLogout }: Heade
                   <p className="text-sm font-semibold leading-tight">{user.nome.split(" ")[0]}</p>
                   <p className="text-[10px] text-white/60 uppercase tracking-wider">{ROLE_LABELS[user.role] || user.role}</p>
                 </div>
-                <button
-                  onClick={onLogout}
-                  className="text-[10px] text-white/50 hover:text-white/90 transition-colors uppercase tracking-wider font-semibold"
-                >
-                  Sair
-                </button>
+                <div className="flex gap-2">
+                  {onHelp && (
+                    <button
+                      onClick={onHelp}
+                      className="text-[10px] text-white/50 hover:text-white/90 transition-colors uppercase tracking-wider font-semibold"
+                    >
+                      Ajuda
+                    </button>
+                  )}
+                  <span className="text-white/20">|</span>
+                  <button
+                    onClick={onLogout}
+                    className="text-[10px] text-white/50 hover:text-white/90 transition-colors uppercase tracking-wider font-semibold"
+                  >
+                    Sair
+                  </button>
+                </div>
               </>
             ) : (
               <div className="w-10 h-10 rounded-full bg-ceara-amarelo flex items-center justify-center text-ceara-verde font-bold text-lg shadow">
