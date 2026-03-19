@@ -28,7 +28,9 @@ Plataforma de **recomposicao da aprendizagem** para alunos do **6o ao 9o ano**, 
 ### Sistema de provas
 - **3 tipos de questao**: multipla escolha (auto-corrigida), dissertativa, calculo
 - **Calculo detalhado**: aluno descreve passos da resolucao em editor rich text
-- **Auto-save**: progresso salvo automaticamente durante a prova
+- **Auto-save**: progresso salvo automaticamente com indicador visual (Salvando.../Salvo)
+- **Salvar e sair**: aluno pode sair e continuar depois — progresso preservado
+- **Envio obrigatorio**: so permite enviar quando TODAS as questoes estao respondidas (barra de progresso)
 - **Correcao**: professor ve respostas, atribui notas e comentarios
 - **Resultado**: aluno ve nota total e feedback por questao
 
@@ -42,6 +44,19 @@ Plataforma de **recomposicao da aprendizagem** para alunos do **6o ao 9o ano**, 
 - **Ajuda no quiz**: quando aluno erra, pode perguntar a IA
 - **Ajuda no plano de aula**: professor pede sugestoes a IA
 - **API**: Claude Haiku via `/api/chat`
+
+### Midia social
+- **Mural dos Professores**: feed exclusivo entre professores da mesma escola (posts + comentarios)
+- **Mural da Turma**: feed entre professor e seus alunos (todos podem postar e comentar)
+- Avatares, data/hora, exclusao do proprio post
+
+### Notificacoes
+- Badge com contador no header (atualiza a cada 3s)
+- Prova publicada → notifica alunos da serie/sala
+- Prova enviada → notifica professor
+- Prova corrigida → notifica aluno com nota
+- Novo post → notifica membros do canal
+- Marcar todas como lidas
 
 ### PWA
 - Instalavel em celular e desktop
@@ -196,7 +211,23 @@ O aluno acessa educatio.digital, escolhe a escola, seleciona o professor respons
 4. Clique **IA ajudar** para pedir sugestoes ao tutor IA
 5. Salve o plano
 
-### 6. Usar a IA
+### 6. Mural dos Professores
+1. Role ate **Mural dos Professores**
+2. Escreva uma mensagem e clique **Publicar**
+3. Outros professores da escola veem e podem comentar
+4. Clique em **Comentarios** para expandir/responder
+
+### 7. Mural da Turma
+1. Role ate **Mural da Turma**
+2. Publique avisos, materiais ou orientacoes para seus alunos
+3. Alunos podem responder nos comentarios
+
+### 8. Notificacoes
+- O badge **Avisos** no header mostra o numero de notificacoes nao lidas
+- Clique para abrir o painel e ver todas as notificacoes
+- Voce recebe aviso quando: aluno envia prova, novo post no mural
+
+### 9. Usar a IA
 - Em cada materia/topico ha um botao **Perguntar a IA**
 - No quiz, quando o aluno erra, aparece o botao IA para explicar
 - No plano de aula, o botao **IA ajudar** gera sugestoes
@@ -231,17 +262,26 @@ O aluno acessa educatio.digital, escolhe a escola, seleciona o professor respons
 5. Se errar: veja a explicacao + botao **Perguntar a IA** para tirar duvidas
 
 ### 4. Fazer prova
-1. Role ate **Provas disponiveis**
-2. Clique **Iniciar** na prova
-3. Responda cada questao:
+1. Role ate **Provas disponiveis** e clique **Iniciar**
+2. Responda cada questao:
    - **Multipla escolha**: selecione a alternativa
-   - **Dissertativa**: escreva no editor de texto (pode usar negrito, listas, etc)
-   - **Calculo**: escreva a resposta final + descreva todos os passos da resolucao no editor
-4. Seu progresso e salvo automaticamente (pode sair e voltar)
-5. Quando terminar, clique **Enviar prova**
-6. Apos o professor corrigir, voce vera a nota em **Ver nota**
+   - **Dissertativa**: escreva no editor de texto (negrito, listas, etc)
+   - **Calculo**: resposta final + descreva os passos da resolucao
+3. A barra de progresso mostra quantas questoes voce respondeu
+4. Progresso **salvo automaticamente** (indicador "Salvo" aparece)
+5. Para pausar: clique **Salvar e sair** — ao voltar, clique **Continuar**
+6. Botao **Enviar prova** so ativa quando TODAS as questoes estao respondidas
+7. Apos correcao, voce recebe **notificacao** e pode ver a nota
 
-### 5. Perguntar a IA
+### 5. Mural da Turma
+- Veja avisos do professor e publicacoes dos colegas
+- Comente e publique para interagir com a turma
+
+### 6. Notificacoes
+- Badge **Avisos** no header com contador de nao lidas
+- Avisos: nova prova, prova corrigida, novo post no mural
+
+### 7. Perguntar a IA
 - Em qualquer materia ou topico, clique em **Perguntar a IA**
 - Digite sua duvida e a IA responde de forma didatica
 - Exemplos: "Me explica fracoes", "Como resolver equacao do 2o grau", "O que e fotossintese"

@@ -8,7 +8,7 @@ Plataforma de **recomposicao da aprendizagem** para alunos do **6o ao 9o ano**, 
 - **GitHub**: https://github.com/Sitemas-Guarany/educatio
 - **Hosting**: Vercel (deploy via `npx vercel --prod --yes --name educatio`)
 - **Dominio**: educatio.digital (DNS na IONOS)
-- **Versao**: 2.0.0
+- **Versao**: 2.2.0
 
 ---
 
@@ -68,6 +68,8 @@ src/
     ai/
       AiButton.tsx          # Botao "Perguntar a IA" reutilizavel
       AiChatModal.tsx       # Modal de chat com Claude
+    social/
+      FeedSocial.tsx        # Mural: professores (entre profs) e turma (prof+alunos)
     admin/
       ImportAlunos.tsx      # Importacao CSV/Excel de alunos (professor/admin)
 
@@ -75,6 +77,8 @@ src/
     auth.tsx                # AuthProvider + useAuth (localStorage, roles, escolas, hierarquia)
     data.ts                 # Conteudos BNCC/DCRC por serie (6o-9o, 6 materias, 3 niveis)
     provas.ts               # CRUD provas + submissoes + auto-correcao (localStorage)
+    social.ts               # Posts e comentarios (mural professores + turma)
+    notificacoes.ts         # Sistema de notificacoes (prova, mensagem, post)
     utils.ts                # cn(), masks (CPF, data), validacao CPF, calculo idade, niveis
 
   types/
@@ -141,3 +145,7 @@ git push origin main                       # Push para GitHub
 - DCRC: DCRC-CE-{MAT|POR|...}-{serie}-{num}
 - Cores: paleta bandeira do Ceara (verde #006847, amarelo #F5C800, azul #003082)
 - Persistencia: localStorage (chaves educatio_*)
+  - educatio_users, educatio_escolas, educatio_session
+  - educatio_provas, educatio_submissoes, educatio_planos
+  - educatio_posts, educatio_comentarios, educatio_notificacoes
+  - educatio_stats_{userId}

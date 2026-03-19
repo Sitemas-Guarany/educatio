@@ -119,9 +119,11 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
     setRealizando(null);
   }, [user, realizando, respostas]);
 
-  // Auto-save with 2-second debounce
+  // Auto-save with 2-second debounce + visual indicator
+  const [saveStatus, setSaveStatus] = useState<"" | "salvando" | "salvo">("");
   useEffect(() => {
     if (!realizando || !user) return;
+    setSaveStatus("salvando");
     const timer = setTimeout(() => {
       const all = getStoredSubmissoes();
       const now = new Date().toISOString();
@@ -134,6 +136,8 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
       };
       if (existente >= 0) all[existente] = sub; else all.push(sub);
       saveSubmissoes(all);
+      setSaveStatus("salvo");
+      setTimeout(() => setSaveStatus(""), 2000);
     }, 2000);
     return () => clearTimeout(timer);
   }, [respostas]);
@@ -219,13 +223,17 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
               </div>
             );
           })}
-          {/* Progress bar */}
-          <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-            <div className="h-full bg-ceara-verde rounded-full transition-all duration-300" style={{ width: `${realizando.questoes.length > 0 ? (respondidas / realizando.questoes.length) * 100 : 0}%` }} />
+          {/* Progress bar + save status */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div className="h-full bg-ceara-verde rounded-full transition-all duration-300" style={{ width: `${realizando.questoes.length > 0 ? (respondidas / realizando.questoes.length) * 100 : 0}%` }} />
+            </div>
+            <span className="text-[10px] text-gray-400 shrink-0">{respondidas}/{realizando.questoes.length}</span>
+            {saveStatus === "salvando" && <span className="text-[10px] text-ceara-amarelo font-semibold shrink-0 animate-pulse">Salvando...</span>}
+            {saveStatus === "salvo" && <span className="text-[10px] text-ceara-verde font-semibold shrink-0 animate-fade-in">Salvo</span>}
           </div>
-          <p className="text-[11px] text-gray-400 text-center">{respondidas}/{realizando.questoes.length} questões respondidas</p>
           <div className="flex gap-2">
-            <button onClick={() => setRealizando(null)} className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-semibold text-sm">Sair (salva progresso)</button>
+            <button onClick={() => setRealizando(null)} className="px-4 py-2.5 rounded-xl bg-ceara-amarelo-light text-amber-800 font-semibold text-xs hover:bg-ceara-amarelo/30 transition-colors">Salvar e sair</button>
             <button onClick={enviarProva} disabled={!todasRespondidas} className={`flex-1 py-2.5 rounded-xl font-bold text-sm active:scale-[0.98] transition-all ${todasRespondidas ? "bg-ceara-verde text-white hover:bg-ceara-verde-mid" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}>
               {todasRespondidas ? "Enviar prova" : `Faltam ${(realizando?.questoes.length || 0) - respondidas}`}
             </button>
