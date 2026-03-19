@@ -44,7 +44,11 @@ export default function QuizPanel({ subjectId, subjectName, serie, onCorrect }: 
     setAnswerState("idle");
   }
 
-  if (!question) return null;
+  if (!question) return (
+    <div className="card p-4 animate-scale-in">
+      <p className="text-sm text-gray-400 text-center py-4">Nenhuma questão disponível para esta matéria</p>
+    </div>
+  );
 
   return (
     <div className="card p-4 animate-scale-in">

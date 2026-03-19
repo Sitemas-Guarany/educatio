@@ -65,6 +65,7 @@ export default function ImportAlunos() {
   const { importUsers, user } = useAuth();
   const [result, setResult] = useState<{ imported: number; errors: string[] } | null>(null);
   const [preview, setPreview] = useState<Record<string, string>[]>([]);
+  const [showFlash, setShowFlash] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +93,10 @@ export default function ImportAlunos() {
       setResult(res);
       setPreview([]);
       if (fileRef.current) fileRef.current.value = "";
+      if (res.imported > 0) {
+        setShowFlash(true);
+        setTimeout(() => setShowFlash(false), 2000);
+      }
     };
     reader.readAsText(file, "utf-8");
   };
@@ -158,6 +163,13 @@ export default function ImportAlunos() {
           <button onClick={handleImport} className="w-full py-2.5 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all">
             Importar {preview.length}+ alunos
           </button>
+        </div>
+      )}
+
+      {/* Success flash */}
+      {showFlash && (
+        <div className="rounded-xl px-4 py-3 bg-green-500 text-white text-sm font-bold text-center animate-scale-in shadow-lg">
+          Importado com sucesso!
         </div>
       )}
 

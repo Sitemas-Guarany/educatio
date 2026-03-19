@@ -24,14 +24,33 @@ export default function HomePage() {
   const [serie, setSerie]         = useState<Serie>("6");
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showAjuda, setShowAjuda] = useState(false);
-  const [points, setPoints]       = useState(240);
-  const [done, setDone]           = useState(12);
-  const [streak]                  = useState(3);
+  const [points, setPoints]       = useState(0);
+  const [done, setDone]           = useState(0);
+  const [streak]                  = useState(0);
 
   // Set initial serie from user profile
   useEffect(() => {
     if (user?.serie) setSerie(user.serie);
   }, [user?.serie]);
+
+  // Load stats from localStorage on mount
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const stored = localStorage.getItem(`educatio_stats_${user.id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (typeof parsed.points === "number") setPoints(parsed.points);
+        if (typeof parsed.done === "number") setDone(parsed.done);
+      }
+    } catch {}
+  }, [user]);
+
+  // Save stats to localStorage when points/done change
+  useEffect(() => {
+    if (!user) return;
+    localStorage.setItem(`educatio_stats_${user.id}`, JSON.stringify({ points, done }));
+  }, [user, points, done]);
 
   const subjects = SUBJECTS_BY_SERIE[serie];
   const activeSubject = subjects.find((s) => s.id === subjectId) ?? null;

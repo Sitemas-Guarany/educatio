@@ -39,7 +39,29 @@ export default function ProvaEditor({ prova, onSave, onCancel }: ProvaEditorProp
   }, []);
 
   const handleSave = (status: "rascunho" | "publicada") => {
-    if (!titulo.trim() || questoes.length === 0) return;
+    if (!titulo.trim() || questoes.length === 0) {
+      alert("A prova precisa ter um título e pelo menos 1 questão.");
+      return;
+    }
+    // Validate each question
+    for (let i = 0; i < questoes.length; i++) {
+      const q = questoes[i];
+      if (!q.enunciado.trim()) {
+        alert(`Questão ${i + 1}: o enunciado não pode estar vazio.`);
+        return;
+      }
+      if (q.tipo === "multipla_escolha") {
+        const nonEmpty = (q.alternativas || []).filter((a) => a.trim().length > 0);
+        if (nonEmpty.length < 2) {
+          alert(`Questão ${i + 1}: precisa ter pelo menos 2 alternativas preenchidas.`);
+          return;
+        }
+        if (q.respostaCorretaIndex == null || q.respostaCorretaIndex < 0 || q.respostaCorretaIndex >= (q.alternativas || []).length || !(q.alternativas || [])[q.respostaCorretaIndex]?.trim()) {
+          alert(`Questão ${i + 1}: marque uma alternativa correta válida.`);
+          return;
+        }
+      }
+    }
     onSave({
       titulo: titulo.trim(),
       materia,

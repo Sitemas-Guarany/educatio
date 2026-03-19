@@ -94,20 +94,23 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
     setRealizando(null);
   }, [user, realizando, respostas]);
 
-  // Auto-save
+  // Auto-save with 2-second debounce
   useEffect(() => {
     if (!realizando || !user) return;
-    const all = getStoredSubmissoes();
-    const now = new Date().toISOString();
-    const existente = all.findIndex((s) => s.provaId === realizando.id && s.alunoId === user.id);
-    const sub: SubmissaoProva = {
-      id: existente >= 0 ? all[existente].id : crypto.randomUUID(),
-      provaId: realizando.id, alunoId: user.id, respostas, status: "em_andamento",
-      notaMaxima: realizando.questoes.reduce((s, q) => s + q.pontos, 0),
-      createdAt: existente >= 0 ? all[existente].createdAt : now, updatedAt: now,
-    };
-    if (existente >= 0) all[existente] = sub; else all.push(sub);
-    saveSubmissoes(all);
+    const timer = setTimeout(() => {
+      const all = getStoredSubmissoes();
+      const now = new Date().toISOString();
+      const existente = all.findIndex((s) => s.provaId === realizando.id && s.alunoId === user.id);
+      const sub: SubmissaoProva = {
+        id: existente >= 0 ? all[existente].id : crypto.randomUUID(),
+        provaId: realizando.id, alunoId: user.id, respostas, status: "em_andamento",
+        notaMaxima: realizando.questoes.reduce((s, q) => s + q.pontos, 0),
+        createdAt: existente >= 0 ? all[existente].createdAt : now, updatedAt: now,
+      };
+      if (existente >= 0) all[existente] = sub; else all.push(sub);
+      saveSubmissoes(all);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [respostas]);
 
   if (!user || user.role !== "aluno") return null;

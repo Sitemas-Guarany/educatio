@@ -84,7 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback((email: string, senha: string): string | null => {
     const found = getStoredUsers().find((u) => u.email.toLowerCase() === email.toLowerCase());
     if (!found) return "E-mail não encontrado.";
-    if (found.senha !== senha) return "Senha incorreta.";
+    // Support both encoded and legacy plaintext passwords
+    let match = false;
+    try { match = atob(found.senha) === senha; } catch { match = false; }
+    if (!match) match = found.senha === senha;
+    if (!match) return "Senha incorreta.";
+    // Migrate plaintext password to encoded if needed
+    if (found.senha === senha) {
+      const users = getStoredUsers();
+      const idx = users.findIndex((u) => u.id === found.id);
+      if (idx >= 0) { users[idx].senha = btoa(senha); saveUsers(users); }
+    }
     const { senha: _, ...safe } = found;
     setUser(safe);
     localStorage.setItem(SESSION_KEY, found.id);
@@ -104,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dataNascimento: data.dataNascimento,
       sexo: data.sexo,
       email: data.email,
-      senha: data.senha,
+      senha: btoa(data.senha),
       cpf: data.cpf,
       matricula: data.matricula,
       role: data.role,
@@ -154,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         dataNascimento: row.dataNascimento,
         sexo: row.sexo,
         email: row.email || `${row.matricula}@educatio.local`,
-        senha: row.senha || row.matricula,
+        senha: btoa(row.senha || row.matricula),
         cpf: row.cpf || "",
         matricula: row.matricula,
         role: row.role || "aluno",

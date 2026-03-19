@@ -39,7 +39,7 @@ export default function Header({ overallProgress, serie, user, onLogout, onHelp 
             {user ? (
               <>
                 <div className="text-right">
-                  <p className="text-sm font-semibold leading-tight">{user.nome.split(" ")[0]}</p>
+                  <p className="text-sm font-semibold leading-tight truncate max-w-[120px]">{user.nome.split(" ")[0]}</p>
                   <p className="text-[10px] text-white/60 uppercase tracking-wider">{ROLE_LABELS[user.role] || user.role}</p>
                 </div>
                 <div className="flex gap-2">

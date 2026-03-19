@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 import type { Serie } from "@/types";
 
 interface Message {
@@ -17,10 +18,12 @@ interface AiChatModalProps {
 }
 
 export default function AiChatModal({ open, onClose, subject, serie, topic }: AiChatModalProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,6 +58,7 @@ export default function AiChatModal({ open, onClose, subject, serie, topic }: Ai
           subject,
           serie,
           topic,
+          role: user?.role,
         }),
       });
       const data = await res.json();
@@ -94,12 +98,25 @@ export default function AiChatModal({ open, onClose, subject, serie, topic }: Ai
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+              <div className={`relative group max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                 m.role === "user"
                   ? "bg-ceara-verde text-white rounded-br-md"
                   : "bg-white border border-gray-200 text-gray-700 rounded-bl-md shadow-sm"
               }`}>
                 {m.content}
+                {m.role === "assistant" && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(m.content);
+                      setCopiedIdx(i);
+                      setTimeout(() => setCopiedIdx(null), 1500);
+                    }}
+                    className="absolute -bottom-1 right-1 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-gray-400 hover:text-ceara-verde bg-white border border-gray-200 rounded-md px-1.5 py-0.5 shadow-sm"
+                    title="Copiar"
+                  >
+                    {copiedIdx === i ? "Copiado!" : "Copiar"}
+                  </button>
+                )}
               </div>
             </div>
           ))}
