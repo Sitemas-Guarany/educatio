@@ -7,6 +7,7 @@ import { getProvasByProfessor, getStoredProvas, saveProvas, getSubmissoesByProva
 import { notificarProvaPublicada } from "@/lib/notificacoes";
 import ProvaEditor from "./ProvaEditor";
 import CorrecaoPanel from "./CorrecaoPanel";
+import ProvaPDFButton from "./ProvaPDF";
 
 const STATUS_BADGE: Record<string, string> = {
   rascunho: "bg-gray-100 text-gray-600",
@@ -123,6 +124,7 @@ export default function ProvasPanel() {
                     <button onClick={() => handleViewSubs(p)} className="text-xs font-semibold text-ceara-sol bg-ceara-amarelo-light px-3 py-1.5 rounded-lg hover:bg-ceara-amarelo/30">
                       Ver respostas ({subs.length})
                     </button>
+                    <ProvaPDFButton prova={p} />
                     <button onClick={() => handleDelete(p.id)} className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 ml-auto">Excluir</button>
                   </div>
                 )}

@@ -10,6 +10,23 @@ interface Municipio {
   nome: string;
 }
 
+const ESTADOS = [
+  { id: "12", sigla: "AC", nome: "Acre" }, { id: "27", sigla: "AL", nome: "Alagoas" },
+  { id: "16", sigla: "AP", nome: "Amapá" }, { id: "13", sigla: "AM", nome: "Amazonas" },
+  { id: "29", sigla: "BA", nome: "Bahia" }, { id: "23", sigla: "CE", nome: "Ceará" },
+  { id: "53", sigla: "DF", nome: "Distrito Federal" }, { id: "32", sigla: "ES", nome: "Espírito Santo" },
+  { id: "52", sigla: "GO", nome: "Goiás" }, { id: "21", sigla: "MA", nome: "Maranhão" },
+  { id: "51", sigla: "MT", nome: "Mato Grosso" }, { id: "50", sigla: "MS", nome: "Mato Grosso do Sul" },
+  { id: "31", sigla: "MG", nome: "Minas Gerais" }, { id: "15", sigla: "PA", nome: "Pará" },
+  { id: "25", sigla: "PB", nome: "Paraíba" }, { id: "41", sigla: "PR", nome: "Paraná" },
+  { id: "26", sigla: "PE", nome: "Pernambuco" }, { id: "22", sigla: "PI", nome: "Piauí" },
+  { id: "33", sigla: "RJ", nome: "Rio de Janeiro" }, { id: "24", sigla: "RN", nome: "Rio Grande do Norte" },
+  { id: "43", sigla: "RS", nome: "Rio Grande do Sul" }, { id: "11", sigla: "RO", nome: "Rondônia" },
+  { id: "14", sigla: "RR", nome: "Roraima" }, { id: "42", sigla: "SC", nome: "Santa Catarina" },
+  { id: "35", sigla: "SP", nome: "São Paulo" }, { id: "28", sigla: "SE", nome: "Sergipe" },
+  { id: "17", sigla: "TO", nome: "Tocantins" },
+];
+
 /** Remove acentos para busca: "São Gonçalo" → "sao goncalo" */
 function normalize(str: string): string {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -53,27 +70,32 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
     ? municipios.filter((m) => normalize(m.nome).includes(normalize(munInput)))
     : municipios;
   const [error, setError] = useState("");
+  const [uf, setUf] = useState("23"); // 23 = Ceará (padrão)
 
   // Manual
   const [nomeManual, setNomeManual] = useState("");
   const [cidadeManual, setCidadeManual] = useState("");
   const [salasManual, setSalasManual] = useState("A, B, C");
 
-  // Load Ceará municipalities
+  // Load municipalities when UF changes
   useEffect(() => {
     setLoadingMun(true);
-    fetch("/api/ibge/municipios?uf=23")
+    setMunicipios([]);
+    setMunicipio("");
+    setMunInput("");
+    fetch(`/api/ibge/municipios?uf=${uf}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setMunicipios(data); })
       .catch(() => {})
       .finally(() => setLoadingMun(false));
-  }, []);
+  }, [uf]);
 
   // Fetch schools when municipality changes
   useEffect(() => {
     if (!municipio) { setEscolasINEP([]); return; }
     setLoadingEsc(true);
-    fetch(`/api/escolas?municipio=${encodeURIComponent(municipio)}&uf=CE`)
+    const ufSigla = ESTADOS.find((e) => e.id === uf)?.sigla || "CE";
+    fetch(`/api/escolas?municipio=${encodeURIComponent(municipio)}&uf=${ufSigla}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setEscolasINEP(data); })
       .catch(() => setEscolasINEP([]))
@@ -146,8 +168,14 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
       {/* Buscar no Censo Escolar */}
       {mode === "buscar" && (
         <div className="bg-ceara-verde-light/30 rounded-xl p-3 space-y-2.5">
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Estado *</label>
+            <select value={uf} onChange={(e) => setUf(e.target.value)} className={inputClass}>
+              {ESTADOS.map((e) => <option key={e.id} value={e.id}>{e.sigla} — {e.nome}</option>)}
+            </select>
+          </div>
           <div className="relative" ref={munRef}>
-            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Município do Ceará *</label>
+            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Município *</label>
             <input
               type="text"
               value={munInput}
