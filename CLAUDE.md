@@ -1,8 +1,31 @@
 # Educatio — Guia para Claude Code
 
-## Visão geral
-Plataforma de recomposição da aprendizagem para alunos do **6º ao 9º ano**, alinhada à **BNCC** e **DCRC do Ceará**.
-Stack: **Next.js 14 · TypeScript · Tailwind CSS · Framer Motion**
+## Visao geral
+
+Plataforma de **recomposicao da aprendizagem** para alunos do **6o ao 9o ano**, alinhada a **BNCC** e **DCRC do Ceara**.
+
+- **Producao**: https://educatio.digital
+- **GitHub**: https://github.com/Sitemas-Guarany/educatio
+- **Hosting**: Vercel (deploy via `npx vercel --prod --yes --name educatio`)
+- **Dominio**: educatio.digital (DNS na IONOS)
+- **Versao**: 2.0.0
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Linguagem | TypeScript 5 |
+| Estilizacao | Tailwind CSS 3 |
+| Editor rich text | Tiptap (starter-kit + 10 extensoes) |
+| Animacoes | Framer Motion 11 |
+| Icones | Lucide React |
+| PWA | next-pwa (service worker, manifest) |
+| IA | Claude Haiku via API Anthropic |
+| Dados externos | API IBGE (municipios), INEP Censo Escolar (escolas) |
+| Persistencia | localStorage (sem backend) |
 
 ---
 
@@ -10,111 +33,111 @@ Stack: **Next.js 14 · TypeScript · Tailwind CSS · Framer Motion**
 
 ```
 src/
-├── app/
-│   ├── layout.tsx          # Root layout + metadata
-│   └── page.tsx            # Página principal (dashboard)
-├── components/
-│   ├── layout/
-│   │   └── Header.tsx      # Header com cores do Ceará
-│   ├── dashboard/
-│   │   ├── StatsBar.tsx    # Pontos, atividades, sequência
-│   │   ├── SerieSelector.tsx
-│   │   ├── SubjectGrid.tsx
-│   │   └── TopicsPanel.tsx
-│   └── quiz/
-│       └── QuizPanel.tsx   # Quiz gamificado
-├── lib/
-│   ├── data.ts             # Conteúdos BNCC/DCRC por série
-│   └── utils.ts            # cn(), helpers de status
-├── types/
-│   └── index.ts            # Tipos TypeScript
-└── styles/
-    └── globals.css         # Tailwind + fontes + utilitários
+  app/
+    layout.tsx              # Root layout + AuthProvider + metadata PWA
+    page.tsx                # Pagina principal (dashboard protegido)
+    api/
+      chat/route.ts         # API IA Claude (tutor educacional)
+      ibge/municipios/route.ts  # Proxy IBGE municipios do Ceara
+      escolas/route.ts      # Busca escolas INEP por municipio
+
+  components/
+    layout/
+      Header.tsx            # Header verde Ceara + nome usuario + logout
+      Footer.tsx            # Rodape com copyright Sistemas Guarany
+    dashboard/
+      StatsBar.tsx          # Pontos, atividades, sequencia
+      SerieSelector.tsx     # Seletor 6o-9o ano
+      SubjectGrid.tsx       # Grid de materias
+      TopicsPanel.tsx       # Topicos agrupados por nivel (basico/intermediario/avancado)
+    quiz/
+      QuizPanel.tsx         # Quiz gamificado com IA no erro
+    auth/
+      AuthPage.tsx          # Login + cadastro hierarquico (Escola > Professor > Aluno)
+      EscolaCadastro.tsx    # Busca escola INEP por municipio ou cadastro manual
+    planoaula/
+      PlanosAulaPanel.tsx   # CRUD planos de aula
+      PlanoAulaEditor.tsx   # Editor com Tiptap + metadados
+      EditorToolbar.tsx     # Toolbar: negrito, italico, listas, fontes, alinhamento, etc
+    prova/
+      ProvasPanel.tsx       # Professor: lista + gerencia provas
+      ProvaEditor.tsx       # Criar/editar prova com questoes
+      QuestaoEditor.tsx     # Editor de questao (multipla escolha / dissertativa / calculo)
+      ProvasAlunoPanel.tsx  # Aluno: lista provas + realizar + ver resultado
+      CorrecaoPanel.tsx     # Professor: corrigir submissoes com notas e comentarios
+    ai/
+      AiButton.tsx          # Botao "Perguntar a IA" reutilizavel
+      AiChatModal.tsx       # Modal de chat com Claude
+    admin/
+      ImportAlunos.tsx      # Importacao CSV/Excel de alunos (professor/admin)
+
+  lib/
+    auth.tsx                # AuthProvider + useAuth (localStorage, roles, escolas, hierarquia)
+    data.ts                 # Conteudos BNCC/DCRC por serie (6o-9o, 6 materias, 3 niveis)
+    provas.ts               # CRUD provas + submissoes + auto-correcao (localStorage)
+    utils.ts                # cn(), masks (CPF, data), validacao CPF, calculo idade, niveis
+
+  types/
+    index.ts                # Todos os tipos: User, Escola, Serie, Prova, Submissao, etc
+
+  styles/
+    globals.css             # Tailwind + Tiptap styles + PWA safe areas
+
+public/
+    manifest.json           # PWA manifest
+    icon-192.png            # Icone PWA 192px
+    icon-512.png            # Icone PWA 512px (maskable)
+    favicon.png             # Favicon 48px
+    icon.svg                # Icone vetorial
 ```
 
 ---
 
-## Paleta de cores (Bandeira do Ceará)
+## Hierarquia e vinculos
 
-| Token Tailwind              | Hex       | Uso                        |
-|-----------------------------|-----------|----------------------------|
-| `ceara-verde`               | `#006847` | Cor primária, CTAs         |
-| `ceara-verde-mid`           | `#008A5C` | Hover                      |
-| `ceara-verde-light`         | `#D4EDE4` | Fundos, badges             |
-| `ceara-amarelo`             | `#F5C800` | Destaques, barra progresso |
-| `ceara-amarelo-light`       | `#FEF5C3` | Badges DCRC                |
-| `ceara-azul`                | `#003082` | Azul institucional         |
-| `ceara-azul-mid`            | `#1A4BA0` | —                          |
-| `ceara-azul-light`          | `#D6E1F5` | Badges BNCC                |
-| `ceara-sol`                 | `#F0A500` | Ciências, Inglês           |
+```
+Escola (INEP ou manual)
+  escolaId, nome, codigo INEP, cidade, salas[]
+    |
+    +-- Professor (vinculado a escolaId)
+    |     professorId, materia, sala
+    |     |
+    |     +-- Aluno (vinculado a escolaId + professorId)
+    |           serie, sala, matricula (obrigatoria)
+    |
+    +-- Prova (criada pelo professor, vinculada a escolaId + serie + sala)
+    |     questoes[]: multipla_escolha | dissertativa | calculo
+    |     |
+    |     +-- SubmissaoProva (aluno responde)
+    |           respostas[], notas[], comentarios[]
+    |
+    +-- PlanoAula (criado pelo professor)
+          data, materia, serie, conteudo (HTML Tiptap)
+```
 
 ---
 
-## Comandos úteis
+## Comandos
 
 ```bash
-npm run dev          # Servidor local http://localhost:3000
-npm run build        # Build de produção
+npm run dev          # http://localhost:3000
+npm run build        # Build producao
 npm run lint         # ESLint
-npm run type-check   # TypeScript sem emitir arquivos
+npm run type-check   # TypeScript check
 ```
-
----
-
-## Como adicionar conteúdo
-
-### Nova questão de quiz
-Edite `src/lib/data.ts`, array `QUIZ_QUESTIONS`:
-
-```ts
-{
-  id: "q99",
-  subjectId: "mat6",   // deve existir em SUBJECTS_BY_SERIE["6"]
-  serie: "6",
-  bnccSkill: "EF06MA07",
-  question: "Qual é o MMC de 4 e 6?",
-  options: ["8", "12", "24", "6"],
-  correctIndex: 1,
-  explanation: "O MMC(4,6) = 12, pois 12 é o menor múltiplo comum.",
-}
-```
-
-### Novo tópico
-Dentro do subject em `SUBJECTS_BY_SERIE`, adicione ao array `topics`:
-
-```ts
-{ id: "mat6-5", title: "Meu novo tópico", status: "todo", bnccCode: "EF06MA15" }
-```
-
----
 
 ## Deploy
 
-### Vercel (recomendado)
 ```bash
-# 1. Instale a CLI
-npm i -g vercel
-
-# 2. Deploy
-vercel
-
-# 3. Produção
-vercel --prod
+npx vercel --prod --yes --name educatio   # Deploy producao
+git push origin main                       # Push para GitHub
 ```
 
-### GitHub → Vercel automático
-1. Faça push para `main`
-2. Vercel detecta o Next.js e faz deploy automaticamente
-3. CI do GitHub Actions roda lint + build antes
+## Convencoes
 
----
-
-## Convenções
-
-- Componentes em **PascalCase**, arquivos `.tsx`
-- Funções utilitárias em **camelCase**, arquivo `utils.ts`
-- Todos os textos em **português brasileiro**
-- Referências BNCC no formato `EF{serie}{disciplina}{número}` (ex: `EF06MA07`)
-- Referências DCRC no formato `DCRC-CE-{MAT|POR|...}-{serie}-{num}`
-- Usar `cn()` de `@/lib/utils` para classes condicionais
-- Evitar `any` — tipar com os tipos de `@/types/index.ts`
+- Componentes em PascalCase, arquivos .tsx
+- Textos em portugues brasileiro
+- BNCC: EF{serie}{disciplina}{numero} (ex: EF06MA07)
+- DCRC: DCRC-CE-{MAT|POR|...}-{serie}-{num}
+- Cores: paleta bandeira do Ceara (verde #006847, amarelo #F5C800, azul #003082)
+- Persistencia: localStorage (chaves educatio_*)
