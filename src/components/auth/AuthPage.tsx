@@ -7,9 +7,9 @@ import type { UserRole, Serie, Sexo, Escola, User } from "@/types";
 import EscolaCadastro from "./EscolaCadastro";
 
 const ROLES: { value: UserRole; label: string; icon: string; desc: string }[] = [
-  { value: "aluno", label: "Aluno", icon: "🎓", desc: "Acessa conteúdo da sua série" },
+  { value: "administrador", label: "Escola", icon: "🔑", desc: "Gerencia escolas e professores" },
   { value: "professor", label: "Professor", icon: "👩‍🏫", desc: "Gerencia alunos e conteúdo" },
-  { value: "administrador", label: "Administrador", icon: "🔑", desc: "Gerencia escolas e professores" },
+  { value: "aluno", label: "Aluno", icon: "🎓", desc: "Acessa conteúdo da sua série" },
 ];
 
 const SERIES: Serie[] = ["6", "7", "8", "9"];
@@ -25,6 +25,8 @@ export default function AuthPage() {
   const [resetCodeShown, setResetCodeShown] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [showSenha, setShowSenha] = useState(false);
+  const [showNovaSenha, setShowNovaSenha] = useState(false);
 
   // Login
   const [email, setEmail] = useState("");
@@ -194,7 +196,12 @@ export default function AuthPage() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-gray-500 mb-1">Nova senha *</label>
-                    <input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo 4 caracteres" className={inputClass} />
+                    <div className="relative">
+                      <input type={showNovaSenha ? "text" : "password"} value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo 4 caracteres" className={inputClass} />
+                      <button type="button" onClick={() => setShowNovaSenha(!showNovaSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold transition-colors">
+                        {showNovaSenha ? "Ocultar" : "Ver"}
+                      </button>
+                    </div>
                   </div>
                   {error && <div className="bg-red-50 text-red-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-red-200">{error}</div>}
                   <button type="submit" className="w-full py-3 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all">
@@ -365,7 +372,12 @@ export default function AuthPage() {
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-gray-500 mb-1">Senha *</label>
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Sua senha" className={inputClass} />
+                <div className="relative">
+                  <input type={showSenha ? "text" : "password"} value={senha} onChange={(e) => setSenha(e.target.value)} placeholder="Sua senha" className={inputClass} />
+                  <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-semibold transition-colors">
+                    {showSenha ? "Ocultar" : "Ver"}
+                  </button>
+                </div>
               </div>
             </div>
 
