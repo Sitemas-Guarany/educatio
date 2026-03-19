@@ -217,9 +217,16 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
 
           {municipio && (
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1">
-                {loadingEsc ? "Buscando escolas..." : `${escolasINEP.length} escola(s) encontrada(s)`}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-semibold text-gray-500">
+                  {loadingEsc ? "Buscando escolas nas bases do INEP..." : `${escolasINEP.length} escola(s) encontrada(s)`}
+                </label>
+                {!loadingEsc && escolasINEP.length === 0 && (
+                  <button type="button" onClick={() => { setEscolasINEP([]); setMunicipio(""); setTimeout(() => setMunicipio(municipio), 100); }} className="text-[10px] text-ceara-verde font-semibold hover:underline">
+                    Tentar novamente
+                  </button>
+                )}
+              </div>
               {escolasINEP.length > 5 && (
                 <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Filtrar por nome..." className={`${inputClass} mb-2`} />
               )}
@@ -228,8 +235,11 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
                   <p className="text-xs text-gray-400 text-center py-4">Buscando no Censo Escolar...</p>
                 ) : filteredINEP.length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-xs text-gray-400">Nenhuma escola encontrada.</p>
-                    <button type="button" onClick={() => setMode("manual")} className="text-[11px] text-ceara-verde font-semibold mt-1 hover:underline">Cadastrar manualmente</button>
+                    <p className="text-xs text-gray-500">Nenhuma escola encontrada na base online para este município.</p>
+                    <p className="text-[10px] text-gray-400 mt-1">As APIs públicas do INEP podem estar indisponíveis. Cadastre manualmente:</p>
+                    <button type="button" onClick={() => { setMode("manual"); setCidadeManual(municipio); }} className="mt-2 w-full py-2 rounded-lg bg-ceara-verde text-white text-xs font-bold hover:bg-ceara-verde-mid transition-colors">
+                      Cadastrar escola de {municipio} manualmente
+                    </button>
                   </div>
                 ) : (
                   filteredINEP.map((e) => (
