@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Escola } from "@/types";
 
 const inputClass = "w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-ceara-verde/30 focus:border-ceara-verde transition-colors";
@@ -8,6 +8,11 @@ const inputClass = "w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm
 interface Municipio {
   id: number;
   nome: string;
+}
+
+/** Remove acentos para busca: "São Gonçalo" → "sao goncalo" */
+function normalize(str: string): string {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 interface EscolaINEP {
@@ -29,10 +34,24 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
   const [mode, setMode] = useState<"selecionar" | "buscar" | "manual">("selecionar");
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [municipio, setMunicipio] = useState("");
+  const [munInput, setMunInput] = useState("");
+  const [munOpen, setMunOpen] = useState(false);
   const [escolasINEP, setEscolasINEP] = useState<EscolaINEP[]>([]);
   const [loadingMun, setLoadingMun] = useState(false);
   const [loadingEsc, setLoadingEsc] = useState(false);
   const [busca, setBusca] = useState("");
+
+  const munRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!munOpen) return;
+    const handleClick = (e: MouseEvent) => { if (munRef.current && !munRef.current.contains(e.target as Node)) setMunOpen(false); };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [munOpen]);
+
+  const filteredMunicipios = munInput.length >= 1
+    ? municipios.filter((m) => normalize(m.nome).includes(normalize(munInput)))
+    : municipios;
   const [error, setError] = useState("");
 
   // Manual
@@ -127,14 +146,45 @@ export default function EscolaCadastro({ escolasList, escolaId, onSelectEscola, 
       {/* Buscar no Censo Escolar */}
       {mode === "buscar" && (
         <div className="bg-ceara-verde-light/30 rounded-xl p-3 space-y-2.5">
-          <div>
+          <div className="relative" ref={munRef}>
             <label className="block text-[11px] font-semibold text-gray-500 mb-1">Município do Ceará *</label>
-            <select value={municipio} onChange={(e) => { setMunicipio(e.target.value); setBusca(""); }} className={inputClass} disabled={loadingMun}>
-              <option value="">{loadingMun ? "Carregando municípios..." : "Selecione o município..."}</option>
-              {municipios.map((m) => (
-                <option key={m.id} value={m.nome}>{m.nome}</option>
-              ))}
-            </select>
+            <input
+              type="text"
+              value={munInput}
+              onChange={(e) => { setMunInput(e.target.value); setMunOpen(true); if (!e.target.value) { setMunicipio(""); } }}
+              onFocus={() => setMunOpen(true)}
+              placeholder={loadingMun ? "Carregando municípios..." : "Digite o município..."}
+              disabled={loadingMun}
+              className={inputClass}
+            />
+            {municipio && (
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-[10px] text-ceara-verde font-semibold bg-ceara-verde-light px-2 py-0.5 rounded-lg">{municipio}</span>
+                <button type="button" onClick={() => { setMunicipio(""); setMunInput(""); setBusca(""); }} className="text-[10px] text-red-400 hover:text-red-600">&times;</button>
+              </div>
+            )}
+            {munOpen && !municipio && filteredMunicipios.length > 0 && (
+              <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                {filteredMunicipios.slice(0, 30).map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => { setMunicipio(m.nome); setMunInput(m.nome); setMunOpen(false); setBusca(""); }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-ceara-verde-light/50 transition-colors border-b border-gray-50 last:border-0"
+                  >
+                    {m.nome}
+                  </button>
+                ))}
+                {filteredMunicipios.length > 30 && (
+                  <p className="px-3 py-2 text-[10px] text-gray-400 text-center">+{filteredMunicipios.length - 30} municípios. Continue digitando...</p>
+                )}
+              </div>
+            )}
+            {munOpen && !municipio && munInput.length >= 1 && filteredMunicipios.length === 0 && !loadingMun && (
+              <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-3">
+                <p className="text-xs text-gray-400 text-center">Nenhum município encontrado para "{munInput}"</p>
+              </div>
+            )}
           </div>
 
           {municipio && (
