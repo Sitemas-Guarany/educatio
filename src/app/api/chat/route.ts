@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, subject, serie, topic } = await req.json();
 
-    const systemPrompt = `Você é um tutor educacional do Educatio, plataforma de recuperação escolar do Ceará (BNCC e DCRC).
+    const systemPrompt = `Você é um tutor educacional do Educatio, plataforma de recomposição da aprendizagem do Ceará (BNCC e DCRC).
 Matéria: ${subject}. Série: ${serie}º ano.${topic ? ` Tópico: ${topic}.` : ""}
 
 Regras:

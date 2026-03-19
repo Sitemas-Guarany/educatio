@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth, type CadastroData } from "@/lib/auth";
 import { maskCpf, unmaskCpf, isValidCpf, maskDate, isValidDateBR, calcAge } from "@/lib/utils";
 import type { UserRole, Serie, Sexo, Escola, User } from "@/types";
+import EscolaCadastro from "./EscolaCadastro";
 
 const ROLES: { value: UserRole; label: string; icon: string; desc: string }[] = [
   { value: "aluno", label: "Aluno", icon: "🎓", desc: "Acessa conteúdo da sua série" },
@@ -36,15 +37,17 @@ export default function AuthPage() {
 
   // Escola
   const [escolaId, setEscolaId] = useState("");
-  const [novaEscola, setNovaEscola] = useState("");
-  const [novaEscolaCidade, setNovaEscolaCidade] = useState("");
-  const [showNovaEscola, setShowNovaEscola] = useState(false);
+
+  // Sala + Matéria
+  const [sala, setSala] = useState("");
+  const [materiaProf, setMateriaProf] = useState("");
 
   // Professor (para aluno)
   const [professorId, setProfessorId] = useState("");
 
   const [escolasList, setEscolasList] = useState<Escola[]>([]);
   const [professoresList, setProfessoresList] = useState<User[]>([]);
+  const selectedEscola = escolasList.find((e) => e.id === escolaId);
 
   useEffect(() => { setEscolasList(escolas()); }, [mode]);
   useEffect(() => {
@@ -68,16 +71,6 @@ export default function AuthPage() {
     if (err) setError(err);
   };
 
-  const handleAddEscola = () => {
-    if (!novaEscola.trim()) return;
-    const result = addEscola(novaEscola.trim(), undefined, novaEscolaCidade.trim() || undefined);
-    if (typeof result === "string") { setError(result); return; }
-    setEscolasList(escolas());
-    setEscolaId(result.id);
-    setNovaEscola("");
-    setNovaEscolaCidade("");
-    setShowNovaEscola(false);
-  };
 
   const handleCadastro = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +80,7 @@ export default function AuthPage() {
     }
     if (!escolaId) { setError("Selecione uma escola."); return; }
     if (role === "aluno" && !professorId) { setError("Selecione o professor responsável."); return; }
+    if (role === "aluno" && !sala) { setError("Selecione a sala/turma."); return; }
     if (cpfDigits.length > 0 && !cpfComplete) { setError("CPF incompleto."); return; }
     if (cpfComplete && !cpfValid) { setError("CPF inválido."); return; }
     if (dataNascimento && !dateValid) { setError("Data de nascimento inválida."); return; }
@@ -104,6 +98,8 @@ export default function AuthPage() {
       matricula: matricula.trim(),
       role,
       serie: role === "aluno" ? serie : undefined,
+      sala: sala || undefined,
+      materia: materiaProf || undefined,
       escolaId,
       professorId: role === "aluno" ? professorId : undefined,
     };
@@ -118,7 +114,7 @@ export default function AuthPage() {
         <div className="h-1 bg-ceara-amarelo" />
         <div className="max-w-md mx-auto px-4 py-6 text-center">
           <h1 className="text-display text-3xl font-bold">Educatio</h1>
-          <p className="text-white/70 text-sm mt-1">Plataforma de recuperação escolar · BNCC & DCRC Ceará</p>
+          <p className="text-white/70 text-sm mt-1">Recomposição da aprendizagem · BNCC & DCRC Ceará</p>
         </div>
         <div className="h-1 bg-ceara-azul" />
       </div>
@@ -151,38 +147,17 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                {/* 2. Escola */}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">2. Escola *</label>
-                  {escolasList.length > 0 ? (
-                    <select value={escolaId} onChange={(e) => setEscolaId(e.target.value)} className={inputClass}>
-                      <option value="">Selecione a escola...</option>
-                      {escolasList.map((e) => (
-                        <option key={e.id} value={e.id}>{e.nome}{e.cidade ? ` — ${e.cidade}` : ""}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-4 py-3">Nenhuma escola cadastrada. Adicione abaixo.</p>
-                  )}
-                  {!showNovaEscola ? (
-                    <button type="button" onClick={() => setShowNovaEscola(true)} className="text-xs font-semibold text-ceara-verde mt-2 hover:underline">
-                      + Cadastrar nova escola
-                    </button>
-                  ) : (
-                    <div className="mt-2 bg-ceara-verde-light/50 rounded-xl p-3 space-y-2">
-                      <input type="text" value={novaEscola} onChange={(e) => setNovaEscola(e.target.value)} placeholder="Nome da escola *" className={inputClass} />
-                      <input type="text" value={novaEscolaCidade} onChange={(e) => setNovaEscolaCidade(e.target.value)} placeholder="Cidade (opcional)" className={inputClass} />
-                      <div className="flex gap-2">
-                        <button type="button" onClick={handleAddEscola} className="flex-1 py-2 rounded-lg bg-ceara-verde text-white text-xs font-bold hover:bg-ceara-verde-mid transition-colors">
-                          Cadastrar escola
-                        </button>
-                        <button type="button" onClick={() => setShowNovaEscola(false)} className="px-3 py-2 rounded-lg bg-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-300 transition-colors">
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* 2. Escola — busca INEP + manual */}
+                <EscolaCadastro
+                  escolasList={escolasList}
+                  escolaId={escolaId}
+                  onSelectEscola={(id) => { setEscolaId(id); setEscolasList(escolas()); }}
+                  onCriarEscola={(nome, codigo, cidade, salas) => {
+                    const result = addEscola(nome, codigo, cidade, salas);
+                    if (typeof result !== "string") setEscolasList(escolas());
+                    return result;
+                  }}
+                />
 
                 {/* 3. Professor (só para aluno) */}
                 {role === "aluno" && escolaId && (
@@ -200,6 +175,37 @@ export default function AuthPage() {
                         Nenhum professor cadastrado nesta escola. O professor deve se cadastrar primeiro.
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* 4. Sala + Matéria */}
+                {escolaId && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-500 mb-1">{role === "aluno" ? "4. Sala/Turma *" : "Sala/Turma"}</label>
+                      {selectedEscola?.salas && selectedEscola.salas.length > 0 ? (
+                        <select value={sala} onChange={(e) => setSala(e.target.value)} className={inputClass}>
+                          <option value="">Selecione...</option>
+                          {selectedEscola.salas.map((s) => (
+                            <option key={s} value={s}>Sala {s}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input type="text" value={sala} onChange={(e) => setSala(e.target.value)} placeholder="Ex: A, B, 1, 2..." className={inputClass} />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-500 mb-1">{role === "professor" ? "Matéria principal *" : "Matéria"}</label>
+                      <select value={materiaProf} onChange={(e) => setMateriaProf(e.target.value)} className={inputClass}>
+                        <option value="">Selecione...</option>
+                        <option value="Matemática">Matemática</option>
+                        <option value="Língua Portuguesa">Língua Portuguesa</option>
+                        <option value="Ciências">Ciências</option>
+                        <option value="Geografia">Geografia</option>
+                        <option value="História">História</option>
+                        <option value="Inglês">Inglês</option>
+                      </select>
+                    </div>
                   </div>
                 )}
 

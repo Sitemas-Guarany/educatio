@@ -29,7 +29,7 @@ export default function Header({ overallProgress, serie, user, onLogout }: Heade
               Educatio
             </h1>
             <p className="text-white/70 text-sm mt-0.5">
-              Recuperação escolar · {serie}º ano · BNCC & DCRC Ceará
+              Recomposição da aprendizagem · {serie}º ano · BNCC & DCRC Ceará
             </p>
           </div>
 

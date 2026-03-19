@@ -8,6 +8,7 @@ export interface Escola {
   nome: string;
   codigo?: string;       // código INEP ou identificador
   cidade?: string;
+  salas?: string[];      // ex: ["A", "B", "C"] ou ["1", "2", "3"]
   createdAt: string;
 }
 
@@ -23,6 +24,8 @@ export interface User {
   matricula: string;         // matrícula escolar (obrigatória)
   role: UserRole;
   serie?: Serie;             // série do aluno (opcional para professor/admin)
+  sala?: string;             // sala/turma (ex: "A", "1")
+  materia?: string;          // matéria principal (professor)
   escolaId: string;          // ID da escola vinculada
   professorId?: string;      // ID do professor responsável (aluno)
   createdAt: string;
@@ -69,6 +72,64 @@ export interface PlanoAula {
   objetivos?: string;        // HTML
   conteudo: string;          // HTML (corpo principal)
   notas?: string;            // HTML
+  createdAt: string;
+  updatedAt: string;
+}
+
+// === PROVAS ===
+
+export type TipoQuestao = "multipla_escolha" | "dissertativa" | "calculo";
+export type ProvaStatus = "rascunho" | "publicada" | "encerrada";
+export type SubmissaoStatus = "em_andamento" | "enviada" | "corrigida";
+
+export interface QuestaoProva {
+  id: string;
+  tipo: TipoQuestao;
+  enunciado: string;
+  pontos: number;
+  alternativas?: string[];
+  respostaCorretaIndex?: number;
+  descricaoCalculo?: string;
+}
+
+export interface Prova {
+  id: string;
+  professorId: string;
+  escolaId: string;
+  titulo: string;
+  materia: string;
+  serie: Serie;
+  sala?: string;
+  descricao?: string;
+  questoes: QuestaoProva[];
+  status: ProvaStatus;
+  dataAplicacao?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RespostaQuestao {
+  questaoId: string;
+  tipo: TipoQuestao;
+  alternativaSelecionada?: number;
+  textoResposta?: string;
+  respostaCalculo?: string;
+  descricaoPassos?: string;
+  nota?: number;
+  comentario?: string;
+  autoCorrigida?: boolean;
+}
+
+export interface SubmissaoProva {
+  id: string;
+  provaId: string;
+  alunoId: string;
+  respostas: RespostaQuestao[];
+  status: SubmissaoStatus;
+  notaTotal?: number;
+  notaMaxima?: number;
+  enviadoEm?: string;
+  corrigidoEm?: string;
   createdAt: string;
   updatedAt: string;
 }

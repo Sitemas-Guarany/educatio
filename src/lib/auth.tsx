@@ -18,7 +18,8 @@ interface AuthContextValue {
   importUsers: (rows: CadastroData[]) => { imported: number; errors: string[] };
   // Escolas
   escolas: () => Escola[];
-  addEscola: (nome: string, codigo?: string, cidade?: string) => Escola | string;
+  addEscola: (nome: string, codigo?: string, cidade?: string, salas?: string[]) => Escola | string;
+  updateEscolaSalas: (id: string, salas: string[]) => void;
   removeEscola: (id: string) => void;
   // Hierarquia
   professoresByEscola: (escolaId: string) => User[];
@@ -38,6 +39,8 @@ export interface CadastroData {
   matricula: string;
   role: UserRole;
   serie?: Serie;
+  sala?: string;
+  materia?: string;
   escolaId: string;
   professorId?: string;
 }
@@ -106,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       matricula: data.matricula,
       role: data.role,
       serie: data.serie,
+      sala: data.sala,
+      materia: data.materia,
       escolaId: data.escolaId,
       professorId: data.professorId,
       createdAt: new Date().toISOString(),
@@ -154,6 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         matricula: row.matricula,
         role: row.role || "aluno",
         serie: row.serie,
+        sala: row.sala,
+        materia: row.materia,
         escolaId: row.escolaId || "",
         professorId: row.professorId,
         createdAt: new Date().toISOString(),
@@ -167,13 +174,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Escolas
   const escolas = useCallback((): Escola[] => getStoredEscolas(), []);
 
-  const addEscola = useCallback((nome: string, codigo?: string, cidade?: string): Escola | string => {
+  const addEscola = useCallback((nome: string, codigo?: string, cidade?: string, salas?: string[]): Escola | string => {
     const list = getStoredEscolas();
     if (list.find((e) => e.nome.toLowerCase() === nome.toLowerCase())) return "Escola já cadastrada.";
-    const escola: Escola = { id: crypto.randomUUID(), nome, codigo, cidade, createdAt: new Date().toISOString() };
+    const escola: Escola = { id: crypto.randomUUID(), nome, codigo, cidade, salas: salas || ["A", "B", "C"], createdAt: new Date().toISOString() };
     list.push(escola);
     saveEscolas(list);
     return escola;
+  }, []);
+
+  const updateEscolaSalas = useCallback((id: string, salas: string[]) => {
+    const list = getStoredEscolas();
+    const idx = list.findIndex((e) => e.id === id);
+    if (idx >= 0) { list[idx].salas = salas; saveEscolas(list); }
   }, []);
 
   const removeEscola = useCallback((id: string) => {
@@ -196,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, loading, login, cadastro, logout, allUsers, deleteUser, importUsers,
-      escolas, addEscola, removeEscola,
+      escolas, addEscola, updateEscolaSalas, removeEscola,
       professoresByEscola, alunosByProfessor, alunosByEscola,
     }}>
       {children}

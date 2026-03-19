@@ -3,10 +3,10 @@ import "@/styles/globals.css";
 import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Educatio | Recuperação Escolar Ceará",
+  title: "Educatio | Recomposição da Aprendizagem — Ceará",
   description:
-    "Plataforma lúdica de recuperação escolar para alunos do 6º ao 9º ano, alinhada à BNCC e DCRC do Ceará.",
-  keywords: ["BNCC", "DCRC", "Ceará", "recuperação escolar", "ensino fundamental", "educação"],
+    "Plataforma lúdica de recomposição da aprendizagem para alunos do 6º ao 9º ano, alinhada à BNCC e DCRC do Ceará.",
+  keywords: ["BNCC", "DCRC", "Ceará", "recomposição da aprendizagem", "ensino fundamental", "educação"],
   authors: [{ name: "Educatio" }],
   manifest: "/manifest.json",
   appleWebApp: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Educatio",
-    description: "Educatio — Recuperação escolar 6º ao 9º ano — BNCC & DCRC Ceará",
+    description: "Educatio — Recomposição da aprendizagem 6º ao 9º ano — BNCC & DCRC Ceará",
     locale: "pt_BR",
     type: "website",
   },

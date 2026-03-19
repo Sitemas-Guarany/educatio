@@ -15,6 +15,8 @@ import TopicsPanel from "@/components/dashboard/TopicsPanel";
 import QuizPanel from "@/components/quiz/QuizPanel";
 import ImportAlunos from "@/components/admin/ImportAlunos";
 import PlanosAulaPanel from "@/components/planoaula/PlanosAulaPanel";
+import ProvasPanel from "@/components/prova/ProvasPanel";
+import ProvasAlunoPanel from "@/components/prova/ProvasAlunoPanel";
 
 export default function HomePage() {
   const { user, loading, logout } = useAuth();
@@ -102,6 +104,16 @@ export default function HomePage() {
             onCorrect={handleCorrectAnswer}
           />
         )}
+        {/* Provas — professor/admin */}
+        {(user.role === "professor" || user.role === "administrador") && (
+          <ProvasPanel />
+        )}
+
+        {/* Provas — aluno */}
+        {user.role === "aluno" && (
+          <ProvasAlunoPanel serie={serie} />
+        )}
+
         {/* Planos de aula — professor/admin */}
         {(user.role === "professor" || user.role === "administrador") && (
           <PlanosAulaPanel />

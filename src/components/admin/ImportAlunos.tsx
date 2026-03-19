@@ -5,11 +5,11 @@ import { useAuth, type CadastroData } from "@/lib/auth";
 import { unmaskCpf } from "@/lib/utils";
 import type { Serie, Sexo } from "@/types";
 
-const TEMPLATE_HEADERS = ["nome", "nome_completo", "nome_mae", "data_nascimento", "sexo", "cpf", "matricula", "serie", "email", "senha"];
+const TEMPLATE_HEADERS = ["nome", "nome_completo", "nome_mae", "data_nascimento", "sexo", "cpf", "matricula", "serie", "sala", "email", "senha"];
 
 function generateTemplate(): string {
   const header = TEMPLATE_HEADERS.join(";");
-  const example = "Maria;Maria da Silva Santos;Ana da Silva;15/03/2013;F;12345678901;2026001234;6;maria@email.com;1234";
+  const example = "Maria;Maria da Silva Santos;Ana da Silva;15/03/2013;F;12345678901;2026001234;6;A;maria@email.com;1234";
   return `${header}\n${example}`;
 }
 
@@ -55,6 +55,7 @@ function rowToCadastroData(row: Record<string, string>, escolaId: string, profes
     matricula: row.matricula || "",
     role: "aluno",
     serie: validSeries.includes(serieVal) ? (serieVal as Serie) : undefined,
+    sala: row.sala || undefined,
     escolaId,
     professorId,
   };

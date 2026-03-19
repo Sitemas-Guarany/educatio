@@ -22,7 +22,7 @@ export default function TopicsPanel({ subject, serie }: TopicsPanelProps) {
         <span className="text-2xl">{subject.icon}</span>
         <div className="flex-1">
           <h2 className="font-bold text-gray-800 leading-tight">{subject.name}</h2>
-          <p className="text-xs text-gray-400">{serie}º ano · Tópicos de recuperação</p>
+          <p className="text-xs text-gray-400">{serie}º ano · Tópicos de recomposição</p>
         </div>
         <AiButton subject={subject.name} serie={serie} />
       </div>

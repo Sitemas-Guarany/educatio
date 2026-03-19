@@ -1,6 +1,6 @@
 # 📚 Educatio
 
-Plataforma lúdica e didática de **recuperação escolar** para alunos do **6º ao 9º ano**, alinhada à **BNCC** (Base Nacional Curricular Comum) e à **DCRC do Ceará** (Diretriz Curricular Referencial do Ceará).
+Plataforma lúdica e didática de **recomposição da aprendizagem** para alunos do **6º ao 9º ano**, alinhada à **BNCC** (Base Nacional Curricular Comum) e à **DCRC do Ceará** (Diretriz Curricular Referencial do Ceará).
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)

@@ -1,7 +1,7 @@
 # Educatio — Guia para Claude Code
 
 ## Visão geral
-Plataforma de recuperação escolar para alunos do **6º ao 9º ano**, alinhada à **BNCC** e **DCRC do Ceará**.
+Plataforma de recomposição da aprendizagem para alunos do **6º ao 9º ano**, alinhada à **BNCC** e **DCRC do Ceará**.
 Stack: **Next.js 14 · TypeScript · Tailwind CSS · Framer Motion**
 
 ---
