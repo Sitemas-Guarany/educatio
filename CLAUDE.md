@@ -8,7 +8,7 @@ Plataforma de **recomposicao da aprendizagem** para alunos do **6o ao 9o ano**, 
 - **GitHub**: https://github.com/Sitemas-Guarany/educatio
 - **Hosting**: Vercel (deploy via `npx vercel --prod --yes --name educatio`)
 - **Dominio**: educatio.digital (DNS na IONOS)
-- **Versao**: 2.2.0
+- **Versao**: 2.3.0
 
 ---
 

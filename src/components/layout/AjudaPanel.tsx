@@ -105,7 +105,7 @@ export default function AjudaPanel({ onClose }: AjudaPanelProps) {
       {/* Footer */}
       <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
         <p className="text-[10px] text-gray-400 text-center">
-          Educatio v2.2.0 — Recomposição da aprendizagem · BNCC & DCRC Ceará
+          Educatio v2.3.0 — Recomposição da aprendizagem · BNCC & DCRC Ceará
         </p>
         <p className="text-[10px] text-gray-400 text-center mt-0.5">
           © 2026 Sistemas Guarany · (85) 99649-6064

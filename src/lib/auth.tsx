@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { User, UserRole, Serie, Sexo, Escola } from "@/types";
 
 const USERS_KEY = "educatio_users";
@@ -16,6 +16,9 @@ interface AuthContextValue {
   allUsers: () => User[];
   deleteUser: (id: string) => void;
   importUsers: (rows: CadastroData[]) => { imported: number; errors: string[] };
+  // Senha
+  resetSenha: (email: string) => { ok: boolean; msg: string; code?: string };
+  confirmarReset: (email: string, code: string, novaSenha: string) => string | null;
   // Escolas
   escolas: () => Escola[];
   addEscola: (nome: string, codigo?: string, cidade?: string, salas?: string[]) => Escola | string;
@@ -199,6 +202,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (idx >= 0) { list[idx].salas = salas; saveEscolas(list); }
   }, []);
 
+  // Reset de senha
+  const resetCodes = useRef<Record<string, { code: string; ts: number }>>({});
+
+  const resetSenha = useCallback((email: string): { ok: boolean; msg: string; code?: string } => {
+    const users = getStoredUsers();
+    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (!found) return { ok: false, msg: "E-mail não encontrado." };
+    const code = String(Math.floor(100000 + Math.random() * 900000)); // 6 dígitos
+    resetCodes.current[email.toLowerCase()] = { code, ts: Date.now() };
+    // Em produção: enviar email com o código. Por enquanto mostra na tela.
+    return { ok: true, msg: `Código enviado para ${email}`, code };
+  }, []);
+
+  const confirmarReset = useCallback((email: string, code: string, novaSenha: string): string | null => {
+    const entry = resetCodes.current[email.toLowerCase()];
+    if (!entry) return "Solicite um novo código.";
+    if (Date.now() - entry.ts > 10 * 60 * 1000) return "Código expirado. Solicite novamente.";
+    if (entry.code !== code) return "Código incorreto.";
+    if (novaSenha.length < 4) return "Nova senha deve ter pelo menos 4 caracteres.";
+    const users = getStoredUsers();
+    const idx = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (idx < 0) return "Usuário não encontrado.";
+    users[idx].senha = btoa(novaSenha);
+    saveUsers(users);
+    delete resetCodes.current[email.toLowerCase()];
+    return null;
+  }, []);
+
   const removeEscola = useCallback((id: string) => {
     saveEscolas(getStoredEscolas().filter((e) => e.id !== id));
   }, []);
@@ -219,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, loading, login, cadastro, logout, allUsers, deleteUser, importUsers,
+      resetSenha, confirmarReset,
       escolas, addEscola, updateEscolaSalas, removeEscola,
       professoresByEscola, alunosByProfessor, alunosByEscola,
     }}>

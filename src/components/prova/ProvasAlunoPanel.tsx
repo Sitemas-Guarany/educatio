@@ -6,7 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import type { Prova, SubmissaoProva, RespostaQuestao, Serie } from "@/types";
-import { notificarProvaEnviada } from "@/lib/notificacoes";
+import { notificarProvaEnviada, notificarProvaIncompleta } from "@/lib/notificacoes";
 import { useAuth } from "@/lib/auth";
 import { getProvasPublicadas, getSubmissaoAluno, getStoredSubmissoes, saveSubmissoes, calcularNotaAutomatica, getStoredProvas } from "@/lib/provas";
 import EditorToolbar from "@/components/planoaula/EditorToolbar";
@@ -233,7 +233,12 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
             {saveStatus === "salvo" && <span className="text-[10px] text-ceara-verde font-semibold shrink-0 animate-fade-in">Salvo</span>}
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setRealizando(null)} className="px-4 py-2.5 rounded-xl bg-ceara-amarelo-light text-amber-800 font-semibold text-xs hover:bg-ceara-amarelo/30 transition-colors">Salvar e sair</button>
+            <button onClick={() => {
+              if (user && realizando && !todasRespondidas) {
+                notificarProvaIncompleta(user.id, realizando.titulo, respondidas, realizando.questoes.length);
+              }
+              setRealizando(null);
+            }} className="px-4 py-2.5 rounded-xl bg-ceara-amarelo-light text-amber-800 font-semibold text-xs hover:bg-ceara-amarelo/30 transition-colors">Salvar e sair</button>
             <button onClick={enviarProva} disabled={!todasRespondidas} className={`flex-1 py-2.5 rounded-xl font-bold text-sm active:scale-[0.98] transition-all ${todasRespondidas ? "bg-ceara-verde text-white hover:bg-ceara-verde-mid" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}>
               {todasRespondidas ? "Enviar prova" : `Faltam ${(realizando?.questoes.length || 0) - respondidas}`}
             </button>

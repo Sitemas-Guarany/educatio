@@ -50,6 +50,10 @@ export function notificarProvaCorrigida(alunoId: string, provaTitle: string, not
   addNotificacao({ userId: alunoId, tipo: "prova_corrigida", titulo: "Prova corrigida!", descricao: `${provaTitle} — Nota: ${nota}` });
 }
 
+export function notificarProvaIncompleta(alunoId: string, provaTitle: string, respondidas: number, total: number) {
+  addNotificacao({ userId: alunoId, tipo: "prova_publicada", titulo: "Prova incompleta", descricao: `${provaTitle} — ${respondidas}/${total} respondidas. Continue!` });
+}
+
 export function notificarMensagem(userId: string, autorNome: string) {
   addNotificacao({ userId, tipo: "mensagem", titulo: "Nova mensagem", descricao: `${autorNome} enviou uma mensagem` });
 }

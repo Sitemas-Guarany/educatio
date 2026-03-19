@@ -16,9 +16,15 @@ const SERIES: Serie[] = ["6", "7", "8", "9"];
 const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-ceara-verde/30 focus:border-ceara-verde transition-colors";
 
 export default function AuthPage() {
-  const { login, cadastro, escolas, addEscola, professoresByEscola } = useAuth();
-  const [mode, setMode] = useState<"login" | "cadastro">("login");
+  const { login, cadastro, escolas, addEscola, professoresByEscola, resetSenha, confirmarReset } = useAuth();
+  const [mode, setMode] = useState<"login" | "cadastro" | "reset">("login");
   const [error, setError] = useState("");
+  const [resetStep, setResetStep] = useState<"email" | "code">("email");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetCodeShown, setResetCodeShown] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   // Login
   const [email, setEmail] = useState("");
@@ -62,6 +68,26 @@ export default function AuthPage() {
   const dateComplete = dataNascimento.length === 10;
   const dateValid = dateComplete && isValidDateBR(dataNascimento);
   const age = dateValid ? calcAge(dataNascimento) : null;
+
+  const handleResetRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!resetEmail.trim()) { setError("Informe seu e-mail."); return; }
+    const result = resetSenha(resetEmail.trim());
+    if (!result.ok) { setError(result.msg); return; }
+    setResetCodeShown(result.code || "");
+    setResetStep("code");
+  };
+
+  const handleResetConfirm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!resetCode.trim() || !novaSenha.trim()) { setError("Preencha o código e a nova senha."); return; }
+    const err = confirmarReset(resetEmail.trim(), resetCode.trim(), novaSenha);
+    if (err) { setError(err); return; }
+    setResetSuccess(true);
+    setTimeout(() => { setMode("login"); setResetStep("email"); setResetSuccess(false); setResetCode(""); setNovaSenha(""); setResetCodeShown(""); }, 2000);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +157,60 @@ export default function AuthPage() {
             </button>
           </div>
 
+          {/* Reset de senha */}
+          {mode === "reset" && (
+            <div className="card p-6 space-y-4">
+              <div className="text-center mb-2">
+                <span className="text-3xl">🔑</span>
+                <h3 className="font-bold text-gray-800 text-sm mt-2">Recuperar senha</h3>
+              </div>
+
+              {resetSuccess ? (
+                <div className="bg-ceara-verde-light text-ceara-verde text-sm font-bold text-center px-4 py-3 rounded-xl animate-scale-in">
+                  Senha alterada com sucesso! Redirecionando...
+                </div>
+              ) : resetStep === "email" ? (
+                <form onSubmit={handleResetRequest} className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">E-mail cadastrado *</label>
+                    <input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" className={inputClass} />
+                  </div>
+                  {error && <div className="bg-red-50 text-red-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-red-200">{error}</div>}
+                  <button type="submit" className="w-full py-3 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all">
+                    Enviar código
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleResetConfirm} className="space-y-4">
+                  {resetCodeShown && (
+                    <div className="bg-ceara-amarelo-light border border-ceara-amarelo rounded-xl px-4 py-3 text-center">
+                      <p className="text-[11px] text-amber-700 mb-1">Código de verificação (em produção será enviado por e-mail):</p>
+                      <p className="text-2xl font-bold text-amber-900 tracking-widest">{resetCodeShown}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Código de 6 dígitos *</label>
+                    <input type="text" inputMode="numeric" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" maxLength={6} className={`${inputClass} text-center text-lg tracking-widest font-bold`} />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 mb-1">Nova senha *</label>
+                    <input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo 4 caracteres" className={inputClass} />
+                  </div>
+                  {error && <div className="bg-red-50 text-red-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-red-200">{error}</div>}
+                  <button type="submit" className="w-full py-3 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all">
+                    Alterar senha
+                  </button>
+                  <button type="button" onClick={() => { setResetStep("email"); setError(""); }} className="w-full text-xs text-gray-400 hover:text-gray-600">Solicitar novo código</button>
+                </form>
+              )}
+
+              <button onClick={() => { setMode("login"); setError(""); setResetStep("email"); }} className="w-full text-xs text-ceara-verde font-semibold hover:underline">
+                Voltar ao login
+              </button>
+            </div>
+          )}
+
+          {mode !== "reset" && (
           <form onSubmit={mode === "login" ? handleLogin : handleCadastro} className="card p-6 space-y-4">
             {mode === "cadastro" && (
               <>
@@ -294,7 +374,13 @@ export default function AuthPage() {
             <button type="submit" className="w-full py-3.5 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all shadow-sm">
               {mode === "login" ? "Entrar" : "Criar conta"}
             </button>
+            {mode === "login" && (
+              <button type="button" onClick={() => { setMode("reset"); setError(""); }} className="w-full text-xs text-ceara-verde font-semibold hover:underline mt-2">
+                Esqueci minha senha
+              </button>
+            )}
           </form>
+          )}
 
           {/* Hierarquia info */}
           {mode === "cadastro" && (
