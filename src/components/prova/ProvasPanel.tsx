@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { Prova, SubmissaoProva } from "@/types";
 import { useAuth } from "@/lib/auth";
 import { getProvasByProfessor, getStoredProvas, saveProvas, getSubmissoesByProva, getStoredSubmissoes, saveSubmissoes, calcularNotaAutomatica } from "@/lib/provas";
+import { notificarProvaPublicada } from "@/lib/notificacoes";
 import ProvaEditor from "./ProvaEditor";
 import CorrecaoPanel from "./CorrecaoPanel";
 
@@ -37,6 +38,11 @@ export default function ProvasPanel() {
       all.push({ id: crypto.randomUUID(), professorId: user.id, escolaId: user.escolaId, ...data, createdAt: now, updatedAt: now });
     }
     saveProvas(all);
+    // Notificar alunos quando prova é publicada
+    if (data.status === "publicada") {
+      const alunos = alunosByProfessor(user.id).filter((a) => a.serie === data.serie && (!data.sala || a.sala === data.sala));
+      notificarProvaPublicada(alunos.map((a) => a.id), data.titulo);
+    }
     setEditing(null);
   }, [user, editing]);
 

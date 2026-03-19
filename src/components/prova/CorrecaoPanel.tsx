@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import type { Prova, SubmissaoProva, RespostaQuestao } from "@/types";
 import { useAuth } from "@/lib/auth";
 import { getStoredSubmissoes, saveSubmissoes } from "@/lib/provas";
+import { notificarProvaCorrigida } from "@/lib/notificacoes";
 
 const inputClass = "w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-ceara-verde/30 focus:border-ceara-verde transition-colors";
 
@@ -45,6 +46,7 @@ export default function CorrecaoPanel({ prova, submissoes, onBack }: CorrecaoPan
     const notaMaxima = prova.questoes.reduce((s, q) => s + q.pontos, 0);
     all[idx] = { ...all[idx], respostas, notaTotal, notaMaxima, status: "corrigida", corrigidoEm: new Date().toISOString(), updatedAt: new Date().toISOString() };
     saveSubmissoes(all);
+    notificarProvaCorrigida(selectedSub.alunoId, prova.titulo, `${notaTotal}/${notaMaxima}`);
     setSelectedSub(null);
   }, [selectedSub, notas, comentarios, prova]);
 

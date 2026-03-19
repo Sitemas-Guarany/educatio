@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import type { Prova, SubmissaoProva, RespostaQuestao, Serie } from "@/types";
+import { notificarProvaEnviada } from "@/lib/notificacoes";
 import { useAuth } from "@/lib/auth";
 import { getProvasPublicadas, getSubmissaoAluno, getStoredSubmissoes, saveSubmissoes, calcularNotaAutomatica, getStoredProvas } from "@/lib/provas";
 import EditorToolbar from "@/components/planoaula/EditorToolbar";
@@ -71,8 +72,28 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
     setRespostas((prev) => prev.map((r) => r.questaoId === questaoId ? { ...r, ...partial } : r));
   }, []);
 
+  const todasRespondidas = realizando ? realizando.questoes.every((q) => {
+    const r = respostas.find((r) => r.questaoId === q.id);
+    if (!r) return false;
+    if (q.tipo === "multipla_escolha") return r.alternativaSelecionada != null;
+    if (q.tipo === "dissertativa") return !!(r.textoResposta && r.textoResposta.replace(/<[^>]*>/g, "").trim());
+    if (q.tipo === "calculo") return !!(r.respostaCalculo?.trim());
+    return false;
+  }) : false;
+
+  const respondidas = realizando ? realizando.questoes.filter((q) => {
+    const r = respostas.find((r) => r.questaoId === q.id);
+    if (!r) return false;
+    if (q.tipo === "multipla_escolha") return r.alternativaSelecionada != null;
+    if (q.tipo === "dissertativa") return !!(r.textoResposta && r.textoResposta.replace(/<[^>]*>/g, "").trim());
+    if (q.tipo === "calculo") return !!(r.respostaCalculo?.trim());
+    return false;
+  }).length : 0;
+
   const enviarProva = useCallback(() => {
-    if (!user || !realizando || !confirm("Enviar a prova? Não poderá alterar depois.")) return;
+    if (!user || !realizando) return;
+    if (!todasRespondidas) { alert(`Responda todas as questões antes de enviar. (${respondidas}/${realizando.questoes.length} respondidas)`); return; }
+    if (!confirm("Enviar a prova? Não poderá alterar depois.")) return;
     const all = getStoredSubmissoes();
     const existente = all.findIndex((s) => s.provaId === realizando.id && s.alunoId === user.id);
     const now = new Date().toISOString();
@@ -91,6 +112,10 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
     if (existente >= 0) all[existente] = sub;
     else all.push(sub);
     saveSubmissoes(all);
+    // Notificar professor
+    if (user.professorId) {
+      notificarProvaEnviada(user.professorId, user.nome, realizando.titulo);
+    }
     setRealizando(null);
   }, [user, realizando, respostas]);
 
@@ -194,10 +219,15 @@ export default function ProvasAlunoPanel({ serie }: ProvasAlunoPanelProps) {
               </div>
             );
           })}
-          <div className="flex gap-2 pt-2">
+          {/* Progress bar */}
+          <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div className="h-full bg-ceara-verde rounded-full transition-all duration-300" style={{ width: `${realizando.questoes.length > 0 ? (respondidas / realizando.questoes.length) * 100 : 0}%` }} />
+          </div>
+          <p className="text-[11px] text-gray-400 text-center">{respondidas}/{realizando.questoes.length} questões respondidas</p>
+          <div className="flex gap-2">
             <button onClick={() => setRealizando(null)} className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-semibold text-sm">Sair (salva progresso)</button>
-            <button onClick={enviarProva} className="flex-1 py-2.5 rounded-xl bg-ceara-verde text-white font-bold text-sm hover:bg-ceara-verde-mid active:scale-[0.98] transition-all">
-              Enviar prova
+            <button onClick={enviarProva} disabled={!todasRespondidas} className={`flex-1 py-2.5 rounded-xl font-bold text-sm active:scale-[0.98] transition-all ${todasRespondidas ? "bg-ceara-verde text-white hover:bg-ceara-verde-mid" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}>
+              {todasRespondidas ? "Enviar prova" : `Faltam ${(realizando?.questoes.length || 0) - respondidas}`}
             </button>
           </div>
         </div>

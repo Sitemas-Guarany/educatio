@@ -14,9 +14,12 @@ interface HeaderProps {
   user?: User | null;
   onLogout?: () => void;
   onHelp?: () => void;
+  onNotifs?: () => void;
 }
 
-export default function Header({ overallProgress, serie, user, onLogout, onHelp }: HeaderProps) {
+import { NotificacoesBadge } from "./NotificacoesPanel";
+
+export default function Header({ overallProgress, serie, user, onLogout, onHelp, onNotifs }: HeaderProps) {
   return (
     <header className="bg-ceara-verde text-white">
       {/* Faixa decorativa amarela fina */}
@@ -42,7 +45,9 @@ export default function Header({ overallProgress, serie, user, onLogout, onHelp 
                   <p className="text-sm font-semibold leading-tight truncate max-w-[120px]">{user.nome.split(" ")[0]}</p>
                   <p className="text-[10px] text-white/60 uppercase tracking-wider">{ROLE_LABELS[user.role] || user.role}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {onNotifs && <NotificacoesBadge onClick={onNotifs} />}
+                  <span className="text-white/20">|</span>
                   {onHelp && (
                     <button
                       onClick={onHelp}

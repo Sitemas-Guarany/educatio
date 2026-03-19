@@ -134,6 +134,44 @@ export interface SubmissaoProva {
   updatedAt: string;
 }
 
+// === NOTIFICAÇÕES ===
+
+export interface Notificacao {
+  id: string;
+  userId: string;
+  tipo: "prova_publicada" | "prova_enviada" | "prova_corrigida" | "mensagem" | "post";
+  titulo: string;
+  descricao: string;
+  lida: boolean;
+  link?: string;
+  createdAt: string;
+}
+
+// === MURAL / FEED SOCIAL ===
+
+export interface Post {
+  id: string;
+  autorId: string;
+  autorNome: string;
+  autorRole: UserRole;
+  escolaId: string;
+  canal: "professores" | "turma";   // professores = só profs, turma = prof+alunos
+  professorId?: string;              // se canal=turma, qual professor/turma
+  serie?: Serie;
+  sala?: string;
+  conteudo: string;
+  createdAt: string;
+}
+
+export interface Comentario {
+  id: string;
+  postId: string;
+  autorId: string;
+  autorNome: string;
+  conteudo: string;
+  createdAt: string;
+}
+
 // Questão de quiz
 export interface QuizQuestion {
   id: string;

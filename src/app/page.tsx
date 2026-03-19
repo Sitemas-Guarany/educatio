@@ -18,12 +18,15 @@ import PlanosAulaPanel from "@/components/planoaula/PlanosAulaPanel";
 import ProvasPanel from "@/components/prova/ProvasPanel";
 import ProvasAlunoPanel from "@/components/prova/ProvasAlunoPanel";
 import AjudaPanel from "@/components/layout/AjudaPanel";
+import NotificacoesPanel, { NotificacoesBadge } from "@/components/layout/NotificacoesPanel";
+import FeedSocial from "@/components/social/FeedSocial";
 
 export default function HomePage() {
   const { user, loading, logout } = useAuth();
   const [serie, setSerie]         = useState<Serie>("6");
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [showAjuda, setShowAjuda] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
   const [points, setPoints]       = useState(0);
   const [done, setDone]           = useState(0);
   const [streak]                  = useState(0);
@@ -78,9 +81,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#f7f6f2]">
-      <Header overallProgress={overallProgress} serie={serie} user={user} onLogout={logout} onHelp={() => setShowAjuda(true)} />
+      <Header overallProgress={overallProgress} serie={serie} user={user} onLogout={logout} onHelp={() => setShowAjuda(true)} onNotifs={() => setShowNotifs(true)} />
 
       <main className="max-w-2xl mx-auto px-4 pb-16 pt-4 space-y-5">
+        {/* Notificações */}
+        {showNotifs && (
+          <NotificacoesPanel onClose={() => setShowNotifs(false)} />
+        )}
+
         {/* Ajuda */}
         {showAjuda && (
           <AjudaPanel onClose={() => setShowAjuda(false)} />
@@ -143,6 +151,16 @@ export default function HomePage() {
         {/* Planos de aula — professor/admin */}
         {(user.role === "professor" || user.role === "administrador") && (
           <PlanosAulaPanel />
+        )}
+
+        {/* Mural dos Professores — professor/admin */}
+        {(user.role === "professor" || user.role === "administrador") && (
+          <FeedSocial canal="professores" />
+        )}
+
+        {/* Mural da Turma — professor+alunos */}
+        {(user.role === "professor" || user.role === "aluno") && (
+          <FeedSocial canal="turma" />
         )}
 
         {/* Importar alunos — professor/admin */}
